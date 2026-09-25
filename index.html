@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GharVerified — Trustworthy rentals, verified by us</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --paper:#F6F4EF; --ink:#1B2A22; --ink-soft:#4B594F;
+  --gold:#C99A3B; --teal:#2F6F63; --teal-dark:#20504A;
+  --line:#DCD6C8; --card:#FFFFFF; --danger:#B4463A; --bg-pending:#FBF3DE;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;line-height:1.5}
+h1,h2,h3,.brand{font-family:'Space Grotesk',sans-serif}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:20}
+.headbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{font-weight:700;font-size:1.3rem;display:flex;align-items:center;gap:8px}
+.brand .seal{width:26px;height:26px}
+.tabs{display:flex;gap:4px;background:#EDE9DD;border-radius:8px;padding:3px}
+.tab-btn{border:none;background:transparent;padding:8px 16px;border-radius:6px;font-family:'IBM Plex Sans';font-size:.92rem;font-weight:600;cursor:pointer;color:var(--ink-soft)}
+.tab-btn.active{background:var(--ink);color:var(--paper)}
+
+/* hero */
+.hero{padding:38px 0 22px;border-bottom:1px solid var(--line)}
+.hero h1{font-size:2rem;margin:0 0 6px;max-width:560px}
+.hero p{color:var(--ink-soft);margin:0 0 20px;max-width:520px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.filters input,.filters select{font-family:inherit;font-size:.9rem;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--paper)}
+.filters input[type=text]{flex:1;min-width:160px}
+
+/* listings */
+.section-label{font-size:.8rem;color:var(--ink-soft);margin:26px 0 12px;display:flex;justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.thumb{height:150px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Space Grotesk';font-weight:600;font-size:1.4rem}
+.seal-badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#2A1F05;font-size:.7rem;font-weight:700;padding:4px 9px 4px 7px;border-radius:0 3px 3px 3px;display:flex;align-items:center;gap:4px;clip-path:polygon(0 0,100% 0,100% 100%,8px 100%,0 calc(100% - 8px))}
+.card-body{padding:14px}
+.card-body h3{margin:0 0 2px;font-size:1.05rem}
+.loc{color:var(--ink-soft);font-size:.85rem;margin-bottom:8px}
+.price-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.rent{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem}
+.rent span{font-size:.75rem;font-weight:400;color:var(--ink-soft)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tag{font-size:.72rem;background:#EFEBDE;border:1px solid var(--line);padding:3px 8px;border-radius:20px;color:var(--ink-soft)}
+.card-actions{display:flex;gap:8px}
+.btn{border:none;border-radius:6px;padding:9px 12px;font-weight:600;font-size:.85rem;cursor:pointer;font-family:inherit}
+.btn-primary{background:var(--teal);color:#fff;flex:1}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.empty{color:var(--ink-soft);padding:40px 0;text-align:center;border:1px dashed var(--line);border-radius:10px}
+
+/* admin */
+.admin-shell{display:none}
+.admin-shell.active{display:block}
+#customerView.active{display:block}
+#customerView{display:none}
+.admin-top{background:var(--ink);color:var(--paper);padding:28px 0}
+.admin-top h1{margin:0 0 4px;font-size:1.5rem}
+.admin-top p{margin:0;color:#B9C4BB;font-size:.9rem}
+.gate{max-width:340px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:28px;text-align:center}
+.gate input{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;margin:14px 0;font-family:inherit}
+.stat-row{display:flex;gap:14px;margin:22px 0;flex-wrap:wrap}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;flex:1;min-width:120px}
+.stat b{font-family:'Space Grotesk';font-size:1.6rem;display:block}
+.stat span{font-size:.78rem;color:var(--ink-soft)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:10px 12px;font-size:.85rem;border-bottom:1px solid var(--line)}
+th{background:#EFEBDE;font-weight:600}
+.status-pill{font-size:.72rem;padding:3px 9px;border-radius:20px;font-weight:600}
+.status-pending{background:var(--bg-pending);color:#8A6A15}
+.status-approved{background:#E1EEE9;color:var(--teal-dark)}
+.status-blocked{background:#F6E3E0;color:var(--danger)}
+.row-actions{display:flex;gap:6px}
+.row-actions button{border:none;border-radius:5px;padding:5px 9px;font-size:.75rem;cursor:pointer;font-weight:600}
+.act-approve{background:var(--teal);color:#fff}
+.act-verify{background:var(--gold);color:#2A1F05}
+.act-block{background:var(--danger);color:#fff}
+.act-undo{background:#E9E5D8;color:var(--ink)}
+
+.form-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;margin:20px 0}
+.form-card h3{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid label{font-size:.8rem;color:var(--ink-soft);display:block;margin-bottom:4px}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:.88rem;background:var(--paper)}
+.full{grid-column:1/-1}
+footer{padding:30px 0;color:var(--ink-soft);font-size:.82rem;border-top:1px solid var(--line);margin-top:20px}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap headbar">
+    <div class="brand"><svg class="seal" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 1.6L17.8 3l1 3.2 2.8 1.9-1 3.2 1 3.2-2.8 1.9-1 3.2-3.3-.6L12 22l-2.5-1.6-3.3.6-1-3.2-2.8-1.9 1-3.2-1-3.2 2.8-1.9 1-3.2 3.3.6L12 2z" fill="#C99A3B"/><path d="M8.5 12.2l2.3 2.3 4.7-4.9" stroke="#1B2A22" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>GharVerified</div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tabCustomerBtn" onclick="showView('customer')">Browse rentals</button>
+      <button class="tab-btn" id="tabAdminBtn" onclick="showView('admin')">Owner / Admin</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CUSTOMER / RENTER VIEW ============ -->
+<section id="customerView" class="active">
+  <div class="hero wrap">
+    <h1>Find a flat you can actually trust.</h1>
+    <p>Every listing with a gold seal has had its documents and photos checked by our team — no fake ads, no surprise owners.</p>
+    <div class="filters">
+      <input type="text" id="fLoc" placeholder="Location, e.g. Bodakdev, Satellite...">
+      <select id="fType">
+        <option value="">Any type</option>
+        <option>1 BHK</option><option>2 BHK</option><option>3 BHK</option><option>Room</option>
+      </select>
+      <select id="fFurnish">
+        <option value="">Any furnishing</option>
+        <option>Furnished</option><option>Semi-furnished</option><option>Unfurnished</option>
+      </select>
+      <input type="number" id="fRent" placeholder="Max rent ₹">
+      <select id="fPref">
+        <option value="">Family / Bachelor</option>
+        <option>Family</option><option>Bachelor</option><option>Any</option>
+      </select>
+      <button class="btn btn-primary" style="flex:0" onclick="renderListings()">Search</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="section-label"><span id="resultCount"></span><span>✅ = document-verified by GharVerified</span></div>
+    <div class="grid" id="listingGrid"></div>
+  </div>
+
+  <footer class="wrap">
+    Demo build — listings are stored in this browser only (localStorage), not on a shared server yet. Wire this up to a real backend before going live.
+  </footer>
+</section>
+
+<!-- ============ ADMIN / OWNER VIEW ============ -->
+<section class="admin-shell" id="adminView">
+  <div id="adminGate" class="gate">
+    <h3>Owner / Admin sign-in</h3>
+    <p style="color:var(--ink-soft);font-size:.85rem">Sign in with the admin account you created in Supabase → Authentication.</p>
+    <input type="email" id="adminEmail" placeholder="Email">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button class="btn btn-primary" style="width:100%" onclick="tryLogin()">Sign in</button>
+    <p id="loginError" style="color:var(--danger);font-size:.8rem"></p>
+  </div>
+
+  <div id="adminPanel" style="display:none">
+    <div class="admin-top">
+      <div class="wrap">
+        <h1>Admin dashboard</h1>
+        <p>Approve listings, verify documents, manage reports — before anything goes live for renters.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="stat-row" id="statRow"></div>
+
+      <div class="form-card">
+        <h3>+ Add new listing</h3>
+        <div class="form-grid">
+          <div><label>Location</label><input id="nLoc" placeholder="Area, city"></div>
+          <div><label>Type</label>
+            <select id="nType"><option>1 BHK</option><option>2 BHK</option><option>3 BHK</option><option>Room</option></select>
+          </div>
+          <div><label>Monthly rent (₹)</label><input id="nRent" type="number"></div>
+          <div><label>Deposit (₹)</label><input id="nDep" type="number"></div>
+          <div><label>Furnishing</label>
+            <select id="nFurnish"><option>Furnished</option><option>Semi-furnished</option><option>Unfurnished</option></select>
+          </div>
+          <div><label>Family / Bachelor</label>
+            <select id="nPref"><option>Family</option><option>Bachelor</option><option>Any</option></select>
+          </div>
+          <div><label>Parking</label>
+            <select id="nParking"><option>Yes</option><option>No</option></select>
+          </div>
+          <div><label>Pets allowed</label>
+            <select id="nPets"><option>No</option><option>Yes</option></select>
+          </div>
+          <div><label>Available from</label><input id="nAvail" type="date"></div>
+          <div><label>Owner contact (phone)</label><input id="nContact" placeholder="9xxxxxxxxx"></div>
+          <div class="full"><label>Amenities (comma separated)</label><input id="nAmenities" placeholder="Lift, Security, Water 24x7"></div>
+          <div class="full"><label>Owner name & documents note</label><textarea id="nDocs" rows="2" placeholder="Owner ID proof, ownership papers submitted?"></textarea></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-primary" onclick="addListing()">Add as pending listing</button></div>
+      </div>
+
+      <h3>All listings</h3>
+      <table>
+        <thead><tr><th>Location</th><th>Type</th><th>Rent</th><th>Owner contact</th><th>Status</th><th>Verified</th><th>Actions</th></tr></thead>
+        <tbody id="adminTable"></tbody>
+      </table>
+    </div>
+    <footer class="wrap">Signed in as admin. <a href="#" onclick="logout();return false;">Sign out</a></footer>
+  </div>
+</section>
+
+<script>
+// ---- Supabase config — fill these in from Project Settings → API ----
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const colors = ['#2F6F63','#C99A3B','#4B594F','#8A6A15','#20504A'];
+
+async function fetchApproved(filters){
+  let q = sb.from('listings').select('*').eq('status','approved');
+  if(filters.type) q = q.eq('type', filters.type);
+  if(filters.furnish) q = q.eq('furnish', filters.furnish);
+  if(filters.pref && filters.pref!=='Any') q = q.eq('pref', filters.pref);
+  if(filters.maxRent && isFinite(filters.maxRent)) q = q.lte('rent', filters.maxRent);
+  if(filters.loc) q = q.ilike('loc', `%${filters.loc}%`);
+  const { data, error } = await q.order('created_at', {ascending:false});
+  if(error){ console.error(error); return []; }
+  return data;
+}
+async function fetchAllForAdmin(){
+  const { data, error } = await sb.from('listings').select('*').order('created_at', {ascending:false});
+  if(error){ console.error(error); return []; }
+  return data;
+}
+
+function showView(v){
+  document.getElementById('customerView').classList.toggle('active', v==='customer');
+  document.getElementById('adminView').classList.toggle('active', v==='admin');
+  document.getElementById('tabCustomerBtn').classList.toggle('active', v==='customer');
+  document.getElementById('tabAdminBtn').classList.toggle('active', v==='admin');
+  if(v==='admin' && document.getElementById('adminPanel').style.display==='block') renderAdmin();
+}
+
+async function renderListings(){
+  const grid0 = document.getElementById('listingGrid');
+  grid0.innerHTML = '<div class="empty" style="grid-column:1/-1">Loading listings…</div>';
+
+  const loc = document.getElementById('fLoc').value.toLowerCase();
+  const type = document.getElementById('fType').value;
+  const furnish = document.getElementById('fFurnish').value;
+  const maxRent = parseFloat(document.getElementById('fRent').value) || Infinity;
+  const pref = document.getElementById('fPref').value;
+
+  const list = await fetchApproved({loc, type, furnish, maxRent, pref});
+
+  document.getElementById('resultCount').textContent = list.length + ' listing(s) found';
+  const grid = document.getElementById('listingGrid');
+  if(list.length===0){ grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No listings match yet. Try widening your filters — or check back soon.</div>'; return; }
+
+  grid.innerHTML = list.map((l,i) => `
+    <div class="card">
+      ${l.verified ? '<div class="seal-badge">✓ Verified</div>' : ''}
+      <div class="thumb" style="background:${colors[l.id % colors.length]}">${l.type}</div>
+      <div class="card-body">
+        <h3>${l.type} · ${l.furnish}</h3>
+        <div class="loc">📍 ${l.loc}</div>
+        <div class="price-row">
+          <div class="rent">₹${l.rent.toLocaleString('en-IN')}<span>/month</span></div>
+          <div style="font-size:.78rem;color:var(--ink-soft)">Deposit ₹${l.dep.toLocaleString('en-IN')}</div>
+        </div>
+        <div class="tags">
+          <span class="tag">${l.pref}</span>
+          <span class="tag">🚗 ${l.parking==='Yes'?'Parking':'No parking'}</span>
+          <span class="tag">🐕 ${l.pets==='Yes'?'Pets ok':'No pets'}</span>
+          <span class="tag">From ${l.avail}</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="contactOwner('${l.contact}')">📞 Contact owner</button>
+          <button class="btn btn-ghost" onclick="alert('Amenities: ${l.amenities}')">Amenities</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function contactOwner(num){ window.location.href = 'tel:' + num; }
+
+// ---- Admin (Supabase Auth) ----
+async function tryLogin(){
+  const email = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPass').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){ document.getElementById('loginError').textContent = error.message; return; }
+  document.getElementById('adminGate').style.display='none';
+  document.getElementById('adminPanel').style.display='block';
+  renderAdmin();
+}
+async function logout(){
+  await sb.auth.signOut();
+  document.getElementById('adminGate').style.display='block';
+  document.getElementById('adminPanel').style.display='none';
+}
+// stay signed in across refreshes
+sb.auth.getSession().then(({data}) => {
+  if(data.session){
+    document.getElementById('adminGate').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    renderAdmin();
+  }
+});
+
+async function addListing(){
+  const loc = document.getElementById('nLoc').value.trim();
+  const contact = document.getElementById('nContact').value.trim();
+  if(!loc || !contact){ alert('Location and owner contact are required'); return; }
+  const { error } = await sb.from('listings').insert({
+    loc, type:document.getElementById('nType').value,
+    rent: parseFloat(document.getElementById('nRent').value)||0,
+    dep: parseFloat(document.getElementById('nDep').value)||0,
+    furnish: document.getElementById('nFurnish').value,
+    pref: document.getElementById('nPref').value,
+    parking: document.getElementById('nParking').value,
+    pets: document.getElementById('nPets').value,
+    avail: document.getElementById('nAvail').value || 'Immediate',
+    contact, amenities: document.getElementById('nAmenities').value,
+    docs: document.getElementById('nDocs').value,
+    status:'pending', verified:false
+  });
+  if(error){ alert('Could not add listing: ' + error.message); return; }
+  ['nLoc','nRent','nDep','nAmenities','nDocs','nContact'].forEach(id=>document.getElementById(id).value='');
+  renderAdmin();
+}
+async function setStatus(id, status){
+  const { error } = await sb.from('listings').update({status}).eq('id', id);
+  if(error){ alert(error.message); return; }
+  renderAdmin();
+}
+async function toggleVerify(id, current){
+  const { error } = await sb.from('listings').update({verified: !current}).eq('id', id);
+  if(error){ alert(error.message); return; }
+  renderAdmin();
+}
+async function renderAdmin(){
+  const list = await fetchAllForAdmin();
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat"><b>${list.length}</b><span>Total listings</span></div>
+    <div class="stat"><b>${list.filter(l=>l.status==='pending').length}</b><span>Pending approval</span></div>
+    <div class="stat"><b>${list.filter(l=>l.verified).length}</b><span>Verified</span></div>
+    <div class="stat"><b>${list.filter(l=>l.status==='blocked').length}</b><span>Blocked / reported</span></div>`;
+
+  document.getElementById('adminTable').innerHTML = list.map(l => `
+    <tr>
+      <td>${l.loc}</td><td>${l.type}</td><td>₹${l.rent.toLocaleString('en-IN')}</td><td>${l.contact}</td>
+      <td><span class="status-pill status-${l.status}">${l.status}</span></td>
+      <td>${l.verified ? '✅' : '—'}</td>
+      <td><div class="row-actions">
+        ${l.status!=='approved' ? `<button class="act-approve" onclick="setStatus(${l.id},'approved')">Approve</button>` : ''}
+        <button class="act-verify" onclick="toggleVerify(${l.id}, ${l.verified})">${l.verified?'Unverify':'Verify'}</button>
+        ${l.status!=='blocked' ? `<button class="act-block" onclick="setStatus(${l.id},'blocked')">Block</button>` : `<button class="act-undo" onclick="setStatus(${l.id},'pending')">Unblock</button>`}
+      </div></td>
+    </tr>`).join('');
+}
+
+renderListings();
+</script>
+</body>
+</html>
